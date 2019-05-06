@@ -25,6 +25,10 @@
  }
 
 %pythoncode %{
+  import sys
+  if sys.version_info[0] >= 3:
+      unicode = str
+  
   class Placeholder(object):
       """The python equivalent of TT_NONE"""
       def __str__(self):
@@ -73,7 +77,11 @@
   }
  }
 %typemap(out) HBytes* {
-  $result = PyString_FromStringAndSize((char*)$1->token, $1->len);
+  %#if PY_VERSION_HEX >= 0x03000000
+    $result = PyBytes_FromStringAndSize((char*)$1->token, $1->len);
+  %#else
+    $result = PyString_FromStringAndSize((char*)$1->token, $1->len);
+  %#endif
  }
 %typemap(out) struct HCountedArray_* {
   int i;
@@ -173,7 +181,11 @@
       return PyObject_CallFunctionObjArgs(_helper_Placeholder, NULL);
       break;
     case TT_BYTES:
+      %#if PY_VERSION_HEX >= 0x03000000
+      return PyBytes_FromStringAndSize((char*)token->token_data.bytes.token, token->token_data.bytes.len);
+      %#else
       return PyString_FromStringAndSize((char*)token->token_data.bytes.token, token->token_data.bytes.len);
+      %#endif
     case TT_SINT:
       // TODO: return PyINT if appropriate
       return PyLong_FromLong(token->token_data.sint);

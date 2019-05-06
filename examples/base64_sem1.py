@@ -20,6 +20,9 @@ import sys
 
 import hammer as h
 
+if sys.version_info[0] >= 3:
+    long = int
+    xrange = range
 
 # Semantic actions for the grammar below, each corresponds to an "ARULE".
 # They must be named act_<rulename>.
